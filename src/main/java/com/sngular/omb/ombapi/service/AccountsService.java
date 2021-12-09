@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface AccountsService {
     List<Account> getAccounts();
 
-    Account createAccount(Account account);
+    Account upsertAccount(Account account);
 
     Optional<Account> getAccount(String id);
 }

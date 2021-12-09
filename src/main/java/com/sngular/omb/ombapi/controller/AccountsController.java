@@ -1,6 +1,7 @@
 package com.sngular.omb.ombapi.controller;
 
 import com.sngular.omb.ombapi.model.Account;
+import com.sngular.omb.ombapi.model.request.WithdrawRequest;
 import com.sngular.omb.ombapi.service.AccountsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,11 @@ public class AccountsController {
         return accountsService.getAccounts();
     }
 
+    @PostMapping
+    public Account createAccount(@Valid @RequestBody Account account) {
+        return accountsService.upsertAccount(account);
+    }
+
     @GetMapping("/{accountId}")
     public ResponseEntity<Object> getAccount(@PathVariable String accountId) {
         Optional<Account> account = accountsService.getAccount(accountId);
@@ -38,8 +44,18 @@ public class AccountsController {
         }
     }
 
-    @PostMapping
-    public Account createAccount(@Valid @RequestBody Account account) {
-        return accountsService.createAccount(account);
+    @PutMapping("/{accountId}/withdrawal")
+    public ResponseEntity<Object> withdrawBalance(@PathVariable String accountId, @Valid @RequestBody WithdrawRequest account) {
+        Optional<Account> accountOptional = accountsService.getAccount(accountId);
+
+        if (accountOptional.isPresent()) {
+            Account accountToUpdate = accountOptional.get();
+            accountToUpdate.setCurrentBalance(accountToUpdate.getCurrentBalance() - account.getAmount());
+
+            return new ResponseEntity<>(accountsService.upsertAccount(accountToUpdate), HttpStatus.OK);
+        } else {
+            log.error("Account with id '{}' not found", accountId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The given account identifier was not found");
+        }
     }
 }
