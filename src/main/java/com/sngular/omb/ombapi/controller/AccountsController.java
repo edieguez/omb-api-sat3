@@ -2,6 +2,7 @@ package com.sngular.omb.ombapi.controller;
 
 import com.sngular.omb.ombapi.model.Account;
 import com.sngular.omb.ombapi.model.request.WithdrawRequest;
+import com.sngular.omb.ombapi.model.response.ResponseWrapper;
 import com.sngular.omb.ombapi.service.AccountsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -23,39 +23,46 @@ public class AccountsController {
     private AccountsService accountsService;
 
     @GetMapping
-    public List<Account> getAccounts() {
-        return accountsService.getAccounts();
+    public ResponseEntity<ResponseWrapper> getAccounts() {
+        return new ResponseEntity<>(ResponseWrapper.builder()
+                .data(accountsService.getAccounts()).build(), HttpStatus.OK);
     }
 
     @PostMapping
-    public Account createAccount(@Valid @RequestBody Account account) {
-        return accountsService.upsertAccount(account);
+    public ResponseEntity<ResponseWrapper> createAccount(@Valid @RequestBody Account account) {
+        return new ResponseEntity<>(ResponseWrapper.builder()
+                .data(accountsService.upsertAccount(account)).build(), HttpStatus.CREATED);
     }
 
     @GetMapping("/{accountId}")
-    public ResponseEntity<Object> getAccount(@PathVariable String accountId) {
+    public ResponseEntity<ResponseWrapper> getAccount(@PathVariable String accountId) {
         Optional<Account> account = accountsService.getAccount(accountId);
 
         if (account.isPresent()) {
-            return new ResponseEntity<>(account.get(), HttpStatus.OK);
+            return new ResponseEntity<>(ResponseWrapper.builder()
+                    .data(account.get()).build(), HttpStatus.OK);
         } else {
             log.error("Account with id '{}' not found", accountId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The given account identifier was not found");
+
+            return new ResponseEntity<>(ResponseWrapper.builder()
+                    .error("The given account identifier was not found").build(), HttpStatus.NOT_FOUND);
         }
     }
 
     @PutMapping("/{accountId}/withdrawal")
-    public ResponseEntity<Object> withdrawBalance(@PathVariable String accountId, @Valid @RequestBody WithdrawRequest account) {
+    public ResponseEntity<ResponseWrapper> withdrawBalance(@PathVariable String accountId, @Valid @RequestBody WithdrawRequest account) {
         Optional<Account> accountOptional = accountsService.getAccount(accountId);
 
         if (accountOptional.isPresent()) {
             Account accountToUpdate = accountOptional.get();
             accountToUpdate.setCurrentBalance(accountToUpdate.getCurrentBalance() - account.getAmount());
 
-            return new ResponseEntity<>(accountsService.upsertAccount(accountToUpdate), HttpStatus.OK);
+            return new ResponseEntity<>(ResponseWrapper.builder()
+                    .data(accountsService.upsertAccount(accountToUpdate)).build(), HttpStatus.OK);
         } else {
             log.error("Account with id '{}' not found", accountId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The given account identifier was not found");
+            return new ResponseEntity<>(ResponseWrapper.builder()
+                    .error("The given account identifier was not found").build(), HttpStatus.NOT_FOUND);
         }
     }
 }
