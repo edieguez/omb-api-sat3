@@ -13,14 +13,15 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class ControllerExceptionHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class})
-    protected ResponseEntity<String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+    protected ResponseEntity<ResponseWrapper> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         String message = "Missing required parameter[s]: ";
         message += ex.getBindingResult().getFieldErrors()
                 .stream()
                 .map(FieldError::getField)
                 .collect(Collectors.joining(", "));
 
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ResponseWrapper.builder()
+                .error(message).build(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({IllegalArgumentException.class})
