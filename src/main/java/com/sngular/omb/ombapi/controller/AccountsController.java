@@ -4,6 +4,7 @@ import com.sngular.omb.ombapi.model.Account;
 import com.sngular.omb.ombapi.model.request.WithdrawRequest;
 import com.sngular.omb.ombapi.model.response.ResponseWrapper;
 import com.sngular.omb.ombapi.service.AccountsService;
+import com.sngular.omb.ombapi.util.RequestValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -55,6 +56,7 @@ public class AccountsController {
 
         if (accountOptional.isPresent()) {
             Account accountToUpdate = accountOptional.get();
+            RequestValidator.hasEnoughBalanceForWithdraw(accountToUpdate.getCurrentBalance(), account.getAmount());
             accountToUpdate.setCurrentBalance(accountToUpdate.getCurrentBalance() - account.getAmount());
 
             return new ResponseEntity<>(ResponseWrapper.builder()
