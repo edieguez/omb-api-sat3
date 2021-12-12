@@ -75,6 +75,7 @@
                         <exclude>**/model/*</exclude>
                         <exclude>**/model/response/*</exclude>
                         <exclude>**/model/request/*</exclude>
+                        <exclude>**/com/sngular/omb/ombapi/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
