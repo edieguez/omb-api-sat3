@@ -13,7 +13,7 @@ import java.util.Optional;
 public class AccountsServiceImpl implements AccountsService {
 
     @Autowired
-    AccountsRepository accountsRepository;
+    private AccountsRepository accountsRepository;
 
     @Override
     public List<Account> getAccounts() {
