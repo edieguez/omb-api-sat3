@@ -25,7 +25,7 @@ public class DepositServiceImpl implements DepositService {
             accountsRepository.save(account);
             return new DepositResponse(account.getId(), account.getCurrentBalance());
         } else{
-            return new DepositResponse("Account Not found", 0.0);
+            return new DepositResponse("Account not found", 0.0);
         }
     }
 
